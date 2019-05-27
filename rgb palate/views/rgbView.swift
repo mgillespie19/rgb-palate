@@ -15,6 +15,7 @@ class rgbView: UIViewController {
     var cwCenter = CGPoint(x: 0, y: 0) // color wheel
     var cpCenter = CGPoint(x: 0, y: 0) // color picker
     var currentRGB: [Int?] = [0, 0, 0]
+    let pi = Double.pi
     
     var rLabel:UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 300, height: 100))
     var gLabel:UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 300, height: 100))
@@ -90,45 +91,39 @@ class rgbView: UIViewController {
     
     func updateBgd(touchPoint:CGPoint) {
         let dx = touchPoint.x-cwCenter.x
-        let dy = touchPoint.y-cwCenter.y
-        let saturation = sqrt( Double(pow(dx, 2)) + Double(pow(dy, 2)) ) / Double(cwRadius)
+        let dy = cwCenter.y-touchPoint.y
+        let saturation:Double = sqrt( Double(pow(dx, 2)) + Double(pow(dy, 2)) ) / Double(cwRadius)
         let slope = dy/dx
         var hue:Double = 0
+        //print(slope)
         
-        if slope < 1 {
-            if touchPoint.x > cwCenter.x && touchPoint.y < cwCenter.y {
-                //print ("0-90")
-
-                hue = Double(atan(-dy/dx)/1.74)
-                //print(hue)
-            } else if touchPoint.x < cwCenter.x{
-                //print ("180-270")
-                
-                hue = Double(1.8 - atan(dy/dx)/1.74)
-                //print(hue)
-            } else if touchPoint.x > cwCenter.x {
-                //print("270-360")
-                
-                hue = Double(3.6 - atan(dy/dx)/1.74)
-                //print(hue)
-            }
+        if touchPoint.x >= cwCenter.x && touchPoint.y <= cwCenter.y {
+//            print ("0-90")
+            
+            hue = Double(atan(slope))
+            //print(hue)
+        } else if touchPoint.x <= cwCenter.x && touchPoint.y >= cwCenter.y {
+//            print ("180-270")
+            
+            hue = pi + Double(atan(slope))
+            //print(hue)
+        } else if touchPoint.x >= cwCenter.x && touchPoint.y >= cwCenter.y {
+//            print("270-360")
+            
+            hue = Double(atan(slope)) + 2*pi
+            //print(hue)
         } else { // slope > 1
-            if touchPoint.y < cwCenter.y {
-                //print("90-180")
-                
-                hue = Double(1.8 - atan(dy/dx)/1.74)
-                //print(hue)
-            } else {
-                //print("270-360")
-                
-                hue = Double(3.6 - atan(dy/dx)/1.74)
-                //print(hue)
-            }
+//            print("90-180")
+            hue = Double(atan(slope)) + pi
+            //print(hue)
         }
+        
+        hue = hue/(2*pi)
+//        print(hue)
 
         self.view.backgroundColor = UIColor(hue: CGFloat(hue), saturation: CGFloat(saturation), brightness: 1, alpha: 1)
         
-        var hsvArr = hsv(hue: Int(hue), saturation: Double(saturation), value: 1)
+        var hsvArr = hsv(hue: Int(hue*360), saturation: Double(saturation), value: Double(saturation))
         rLabel.text = "R:" + String(hsvArr[0])
         gLabel.text = "G:" + String(hsvArr[1])
         bLabel.text = "B:" + String(hsvArr[2])
@@ -176,7 +171,7 @@ class rgbView: UIViewController {
         g += Double(m)
         b += Double(m)
         
-        print(r)
+        //print(r)
         
         
         // Change r,g,b values from [0,1] to [0,255]
