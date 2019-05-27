@@ -14,6 +14,8 @@ class favoritesView: UIViewController, UICollectionViewDataSource {
         super.viewDidLoad()
 
         view.backgroundColor = UIColor.white
+        self.tabBarController?.tabBar.barTintColor = .white
+        
         navigationItem.title = "favorites"
         
         setupFavoritesPage()

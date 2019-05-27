@@ -17,17 +17,13 @@ class rgbView: UIViewController {
     var currentRGB: [Int?] = [0, 0, 0]
     let pi = Double.pi
     
-    var rLabel:UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 300, height: 100))
-    var gLabel:UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 300, height: 100))
-    var bLabel:UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 300, height: 100))
-    
     lazy var colorWheel: CAShapeLayer = {
         let cw = CAShapeLayer()
         let colorWheelPath = UIBezierPath(arcCenter: cwCenter, radius: CGFloat(cwRadius), startAngle: CGFloat(0), endAngle:CGFloat(Double.pi * 2), clockwise: true)
         
         cw.path = colorWheelPath.cgPath
         cw.fillColor = UIColor.clear.cgColor
-        cw.strokeColor = UIColor.lightGray.cgColor
+        cw.strokeColor = UIColor.black.cgColor
         cw.lineWidth = 2
         
         return cw
@@ -45,18 +41,14 @@ class rgbView: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.view.backgroundColor = bgdColor
-        navigationItem.title = "color wheel"
+        updateBgd(touchPoint: CGPoint(x: cwCenter.x, y: cwCenter.y), init_seq: true)
+        
         cwCenter.x = self.view.frame.width / 2
         cwCenter.y = self.view.frame.height * 2 / 3
         colorPicker.center = CGPoint(x: self.view.frame.width / 2, y: self.view.frame.height * 2 / 3)
         
         self.view.layer.addSublayer(colorWheel)
         self.view.addSubview(colorPicker)
-        
-        initLabel(label: rLabel, text:"R:255", yPos: 10)
-        initLabel(label: gLabel, text: "G:255", yPos: 5)
-        initLabel(label: bLabel, text: "B:255", yPos: 3.333)
     }
 
     
@@ -75,21 +67,12 @@ class rgbView: UIViewController {
         
         if colorWheel.path!.contains(touchPoint) {
             colorPicker.center = touchPoint
-            updateBgd(touchPoint:touchPoint)
+            updateBgd(touchPoint:touchPoint, init_seq:false)
         }
     }
     
-    func initLabel(label:UILabel, text:String, yPos:CGFloat) {
-        label.frame = CGRect(x: Int(self.view.frame.width / 5), y: Int((self.view.frame.height) / yPos), width: 300, height: 100)
-        label.text = text
-        label.font = rLabel.font.withSize(50)
-        label.textAlignment = NSTextAlignment.left
-        label.textColor = UIColor.black
-        
-        self.view.addSubview(label)
-    }
     
-    func updateBgd(touchPoint:CGPoint) {
+    func updateBgd(touchPoint:CGPoint, init_seq:Bool) {
         let dx = touchPoint.x-cwCenter.x
         let dy = cwCenter.y-touchPoint.y
         let saturation:Double = sqrt( Double(pow(dx, 2)) + Double(pow(dy, 2)) ) / Double(cwRadius)
@@ -122,11 +105,15 @@ class rgbView: UIViewController {
 //        print(hue)
 
         self.view.backgroundColor = UIColor(hue: CGFloat(hue), saturation: CGFloat(saturation), brightness: 1, alpha: 1)
+        self.tabBarController?.tabBar.barTintColor =  UIColor(hue: CGFloat(hue), saturation: CGFloat(saturation), brightness: 1, alpha: 1)
         
-        var hsvArr = hsv(hue: Int(hue*360), saturation: Double(saturation), value: Double(saturation))
-        rLabel.text = "R:" + String(hsvArr[0])
-        gLabel.text = "G:" + String(hsvArr[1])
-        bLabel.text = "B:" + String(hsvArr[2])
+        if (init_seq) {
+            navigationItem.title = "R:0 / G:0 / B:0"
+        } else {
+            var hsvArr = hsv(hue: Int(hue*360), saturation: Double(saturation), value: Double(saturation))
+            navigationItem.title = "R:\(String(hsvArr[0])) / G:\(String(hsvArr[1])) / B:\(String(hsvArr[2]))"
+        }
+        
     }
     
     // hue in range [0, 360]
